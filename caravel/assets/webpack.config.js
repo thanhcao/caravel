@@ -58,6 +58,11 @@ const config = {
         include: APP_DIR,
         loader: 'style-loader!css-loader',
       },
+      {
+        test: /\.scss$/,
+        include: APP_DIR,
+        loaders: ["style", "css", "sass"]
+      },
       /* for css linking images */
       {
         test: /\.png$/,
