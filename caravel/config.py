@@ -235,6 +235,9 @@ DEFAULT_DB_ID = None
 # Timeout duration for SQL Lab synchronous queries
 SQLLAB_TIMEOUT = 30
 
+# template auto reload
+TEMPLATES_AUTO_RELOAD = True
+
 try:
     from caravel_config import *  # noqa
 except ImportError:
