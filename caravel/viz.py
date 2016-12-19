@@ -290,10 +290,12 @@ class BaseViz(object):
         cache_key = self.cache_key
         payload = None
         force = force if force else self.form_data.get('force') == 'true'
+        logging.info("cache_key : {}".format(cache_key))
         if not force:
             payload = cache.get(cache_key)
 
         if payload:
+            logging.info("payload -----------------")
             is_cached = True
             try:
                 cached_data = zlib.decompress(payload)
