@@ -317,6 +317,7 @@ class BaseViz(object):
                 'form_data': self.form_data,
                 'json_endpoint': self.json_endpoint,
                 'query': self.query,
+                'extra_data' : self.get_extra_data(),
                 'standalone_endpoint': self.standalone_endpoint,
             }
             payload['cached_dttm'] = datetime.now().isoformat().split('.')[0]
@@ -367,6 +368,9 @@ class BaseViz(object):
         return df.to_csv(index=include_index, encoding="utf-8")
 
     def get_data(self):
+        return []
+
+    def get_extra_data(self):
         return []
 
     @property
@@ -513,6 +517,9 @@ class PivotTableViz(BaseViz):
             classes=(
                 "dataframe table table-striped table-bordered "
                 "table-condensed table-hover").split(" "))
+
+    def get_extra_data(self):
+        return self.get_df()
 
 
 class MarkupViz(BaseViz):
@@ -1658,7 +1665,7 @@ class FilterBoxViz(BaseViz):
     def query_obj(self):
         qry = super(FilterBoxViz, self).query_obj()
         groupby = self.form_data.get('groupby')
-        if len(groupby) < 1 and not self.form_data.get('date_filter'):
+        if groupby is not None and len(groupby) < 1 and not self.form_data.get('date_filter'):
             raise Exception("Pick at least one filter field")
         qry['metrics'] = [
             self.form_data['metric']]
@@ -1666,8 +1673,10 @@ class FilterBoxViz(BaseViz):
 
     def get_data(self):
         qry = self.query_obj()
-        filters = [g for g in self.form_data['groupby']]
         d = {}
+        if self.form_data['groupby'] is None:
+            return d
+        filters = [g for g in self.form_data['groupby']]
         for flt in filters:
             qry['groupby'] = [flt]
             df = super(FilterBoxViz, self).get_df(qry)

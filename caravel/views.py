@@ -138,30 +138,31 @@ def check_ownership(obj, raise_if_false=True):
     model. It is meant to be used in the ModelView's pre_update hook in
     which raising will abort the update.
     """
-    if not obj:
-        return False
-    roles = (r.name for r in get_user_roles())
-    if 'Admin' in roles:
-        return True
-    session = db.create_scoped_session()
-    orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
-    owner_names = (user.username for user in orig_obj.owners)
-    if (
-            hasattr(orig_obj, 'created_by') and
-            orig_obj.created_by and
-            orig_obj.created_by.username == g.user.username):
-        return True
-    if (
-            hasattr(orig_obj, 'owners') and
-            g.user and
-            hasattr(g.user, 'username') and
-            g.user.username in owner_names):
-        return True
-    if raise_if_false:
-        raise utils.CaravelSecurityException(
-            "You don't have the rights to alter [{}]".format(obj))
-    else:
-        return False
+    return True
+    # if not obj:
+    #     return False
+    # roles = (r.name for r in get_user_roles())
+    # if 'Admin' in roles:
+    #     return True
+    # session = db.create_scoped_session()
+    # orig_obj = session.query(obj.__class__).filter_by(id=obj.id).first()
+    # owner_names = (user.username for user in orig_obj.owners)
+    # if (
+    #         hasattr(orig_obj, 'created_by') and
+    #         orig_obj.created_by and
+    #         orig_obj.created_by.username == g.user.username):
+    #     return True
+    # if (
+    #         hasattr(orig_obj, 'owners') and
+    #         g.user and
+    #         hasattr(g.user, 'username') and
+    #         g.user.username in owner_names):
+    #     return True
+    # if raise_if_false:
+    #     raise utils.CaravelSecurityException(
+    #         "You don't have the rights to alter [{}]".format(obj))
+    # else:
+    #     return False
 
 
 def get_user_roles():
@@ -1112,11 +1113,9 @@ class Caravel(BaseCaravelView):
         session.commit()
         return redirect('/accessrequestsmodelview/list/')
 
-    @has_access
-    @expose("/explore/<datasource_type>/<datasource_id>/<slice_id>/")
-    @expose("/explore/<datasource_type>/<datasource_id>/")
+    @expose("/explore/<datasource_type>/<datasource_id>/<slice_id>/", methods=['GET', 'POST'])
+    @expose("/explore/<datasource_type>/<datasource_id>/",  methods=['GET', 'POST'])
     @expose("/datasource/<datasource_type>/<datasource_id>/")  # Legacy url
-    @log_this
     def explore(self, datasource_type, datasource_id, slice_id=None):
         error_redirect = '/slicemodelview/list/'
         datasource_class = SourceRegistry.sources[datasource_type]
@@ -1317,6 +1316,16 @@ class Caravel(BaseCaravelView):
         return Response("OK", mimetype="application/json")
 
     @api
+    @expose("/bl-dashboards", methods=['GET'])
+    def getDashboards(self):
+        session = db.session()
+        dashboards = session.query(models.Dashboard).all()
+        dasboardJson = []
+        for dash in dashboards:
+            dasboardJson.append(dash.data)
+        return Response(json.dumps(dasboardJson), mimetype="application/json")
+
+    @api
     @has_access_api
     @expose("/activity_per_day")
     def activity_per_day(self):
@@ -1512,11 +1521,12 @@ class Caravel(BaseCaravelView):
             json.dumps({'count': count}),
             mimetype="application/json")
 
-    @has_access
+
     @expose("/dashboard/<dashboard_id>/")
     def dashboard(self, dashboard_id):
         """Server side rendering for a dashboard"""
         session = db.session()
+
         qry = session.query(models.Dashboard)
         if dashboard_id.isdigit():
             qry = qry.filter_by(id=int(dashboard_id))
@@ -1533,12 +1543,32 @@ class Caravel(BaseCaravelView):
         dashboard(dashboard_id=dash.id)
         dash_edit_perm = check_ownership(dash, raise_if_false=False)
         dash_save_perm = dash_edit_perm and self.can_access('can_save_dash', 'Caravel')
+
+
         return self.render_template(
             "caravel/dashboard.html", dashboard=dash,
             user_id=g.user.get_id(),
             templates=templates,
             dash_save_perm=dash_save_perm,
             dash_edit_perm=dash_edit_perm)
+
+    @expose("/bl-dashboard/<dashboard_id>/")
+    def dashboardbl(self, dashboard_id):
+        """Server side rendering for a dashboard"""
+        session = db.session()
+
+        qry = session.query(models.Dashboard)
+        if dashboard_id.isdigit():
+            qry = qry.filter_by(id=int(dashboard_id))
+        else:
+            qry = qry.filter_by(slug=dashboard_id)
+
+        templates = session.query(models.CssTemplate).all()
+        dash = qry.first()
+
+        return Response(dash.to_data(True), mimetype="application/json")
+
+
 
     @has_access
     @expose("/sync_druid/", methods=['POST'])

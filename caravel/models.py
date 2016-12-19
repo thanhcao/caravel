@@ -366,6 +366,28 @@ class Dashboard(Model, AuditMixinNullable):
         }
         return json.dumps(d)
 
+    def to_data(self, includeSlice):
+        d = {
+            'id': self.id,
+            'metadata': self.metadata_dejson,
+            'dashboard_title': self.dashboard_title,
+            'slug': self.slug,
+            'slices': ([slc.data for slc in self.slices] if includeSlice else []),
+            'position_json': json.loads(self.position_json) if self.position_json else [],
+        }
+        return json.dumps(d)
+
+    @property
+    def data(self):
+
+        return {
+            'id': self.id,
+            'metadata': self.metadata_dejson,
+            'dashboard_title': self.dashboard_title,
+            'slug': self.slug,
+            'position_json': json.loads(self.position_json) if self.position_json else []
+        }
+
 
 class Queryable(object):
 

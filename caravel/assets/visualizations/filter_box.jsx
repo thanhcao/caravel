@@ -122,9 +122,11 @@ function filterBox(slice) {
       const filtersChoices = {};
       // Making sure the ordering of the fields matches the setting in the
       // dropdown as it may have been shuffled while serialized to json
-      payload.form_data.groupby.forEach((f) => {
-        filtersChoices[f] = payload.data[f];
-      });
+      if(payload.form_data.groupby){
+        payload.form_data.groupby.forEach((f) => {
+          filtersChoices[f] = payload.data[f];
+        });
+      }
       ReactDOM.render(
         <FilterBox
           filtersChoices={filtersChoices}
