@@ -30,7 +30,7 @@ with open(PACKAGE_FILE) as package_file:
     VERSION_STRING = json.load(package_file)['version']
 
 ROW_LIMIT = 50000
-CARAVEL_WORKERS = 16
+CARAVEL_WORKERS = 4
 
 CARAVEL_WEBSERVER_ADDRESS = '0.0.0.0'
 CARAVEL_WEBSERVER_PORT = 8088
@@ -146,7 +146,7 @@ IMG_UPLOAD_URL = '/static/uploads/'
 # IMG_SIZE = (300, 200, True)
 
 CACHE_DEFAULT_TIMEOUT = None
-CACHE_CONFIG = {'CACHE_TYPE': 'null'}
+CACHE_CONFIG = {'CACHE_TYPE': 'simple'}
 
 # CORS Options
 ENABLE_CORS = False
@@ -182,7 +182,7 @@ ADDITIONAL_MODULE_DS_MAP = {}
 # Console Log Settings
 
 LOG_FORMAT = '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
-LOG_LEVEL = 'DEBUG'
+LOG_LEVEL = 'ERROR'
 
 # ---------------------------------------------------
 # Enable Time Rotate Log Handler

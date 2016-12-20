@@ -59,7 +59,7 @@ def checkout(dbapi_con, con_record, con_proxy):
     return db
 
 
-cache = Cache(app, config=app.config.get('CACHE_CONFIG'))
+cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': 'redis://192.168.1.131:6379/2'})
 
 migrate = Migrate(app, db, directory=APP_DIR + "/migrations")
 
